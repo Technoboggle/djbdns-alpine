@@ -1,5 +1,5 @@
-FROM alpine:3.13.2
-MAINTAINER Edward Finlayson version: 0.2
+FROM alpine:3.13.5
+MAINTAINER Edward Finlayson version: 0.2.1
 
 RUN \
  apk update; \
