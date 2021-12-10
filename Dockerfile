@@ -1,4 +1,4 @@
-FROM alpine:3.14.2 AS builder
+FROM alpine:3.15.0 AS builder
 LABEL net.technoboggle.authorname="Edward Finlayson" \
       net.technoboggle.authors="edward.finlayson@btinternet.com" \
       net.technoboggle.version="0.1" \
@@ -38,7 +38,7 @@ RUN \
  make setup check; \
  apk del .build-deps;
 
-FROM alpine:3.14.2
+FROM alpine:3.15.0
 RUN \
   apk add --no-cache --virtual perl-net-dns; \
   mkdir -p /package/admin/daemontools-0.76/command/ ;\
