@@ -38,7 +38,7 @@ RUN \
  make setup check; \
  apk del .build-deps;
 
-FROM alpine:3.15.0
+FROM alpine:3.15.3
 RUN \
   apk add --no-cache --virtual perl-net-dns; \
   mkdir -p /package/admin/daemontools-0.76/command/ ;\
