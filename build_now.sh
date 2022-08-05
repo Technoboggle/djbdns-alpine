@@ -15,7 +15,7 @@ chmod 0666 *
 chmod 0777 *.sh
 
 #docker network create djbdns
-docker build -f Dockerfile --progress=plain -t technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VCS_REF="`git rev-parse --verify HEAD`" --build-arg BUILD_VERSION=0.05 --no-cache .
+docker build -f Dockerfile -t technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VCS_REF="`git rev-parse --verify HEAD`" --build-arg BUILD_VERSION=0.05 --no-cache .
 #--progress=plain 
 
 docker run -it -d --rm -p 53:53 --name mydjbdns technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver"
