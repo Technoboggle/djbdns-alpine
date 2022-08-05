@@ -20,10 +20,10 @@ docker build -f Dockerfile --progress=plain -t technoboggle/djbdns-alpine:"$djbd
 
 docker run -it -d --rm -p 53:53 --name mydjbdns technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver"
 
-docker tag technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" technoboggle/djbdns-alpine:latest
+#docker tag technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" technoboggle/djbdns-alpine:latest
 docker login
 docker push technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver"
-docker push technoboggle/djbdns-alpine:latest
-#docker container stop -t 10 mydjbdns
+#docker push technoboggle/djbdns-alpine:latest
+docker container stop -t 10 mydjbdns
 
 cd "$owd"

@@ -19,3 +19,6 @@ docker login
 docker push technoboggle/djbdns-alpine:1.05-3.16.1
 docker push technoboggle/djbdns-alpine:latest
 docker container stop -t 10 dns
+
+
+deprecated the use of the :latest tag as it seeds confusion
