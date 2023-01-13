@@ -4,7 +4,7 @@ owd="`pwd`"
 cd "$(dirname "$0")"
 
 djbdns_ver="1.05"
-alpine_ver="3.16.1"
+alpine_ver="3.17.1"
 
 # Setting File permissions
 xattr -c .git
