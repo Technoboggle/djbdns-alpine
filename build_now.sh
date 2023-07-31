@@ -1,29 +1,40 @@
 #!/usr/bin/env sh
 
-owd="`pwd`"
-cd "$(dirname "$0")"
+owd="$(pwd)"
+cd "$(dirname "$0")" || exit
 
 djbdns_ver="1.05"
-alpine_ver="3.17.1"
+alpine_ver="3.18.2"
 
 # Setting File permissions
 xattr -c .git
 xattr -c .gitignore
 xattr -c .dockerignore
-xattr -c *
-chmod 0666 *
-chmod 0777 *.sh
+xattr -c ./*
+chmod 0666 ./*
+find "$(pwd)" -type d -exec chmod ugo+x {} \;
+find "$(pwd)" -type f -exec chmod ugo=wr {} \;
+find "$(pwd)" -type f \( -iname \*.sh -o -iname \*.py \) -exec chmod ugo+x {} \;
+
+current_builder=$(docker buildx ls | grep -i '\*' | head -n1 | awk '{print $1;}')
+docker buildx create --name tb_builder --use --bootstrap
+
+docker login -u="technoboggle" -p="dckr_pat_FhwkY2NiSssfRBW2sJP6zfkXsjo"
 
 #docker network create djbdns
-docker build -f Dockerfile -t technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VCS_REF="`git rev-parse --verify HEAD`" --build-arg BUILD_VERSION=0.05 --no-cache .
-#--progress=plain 
+docker buildx build -f Dockerfile --platform linux/amd64,linux/386 \
+    -t technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" \
+    --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+    --build-arg VCS_REF="$(git rev-parse --verify HEAD)" \
+    --build-arg BUILD_VERSION=0.05 \
+    --no-cache \
+    --push .
+#--progress=plain
 
 docker run -it -d --rm -p 53:53 --name mydjbdns technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver"
-
-#docker tag technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" technoboggle/djbdns-alpine:latest
-docker login
-docker push technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver"
-#docker push technoboggle/djbdns-alpine:latest
 docker container stop -t 10 mydjbdns
 
-cd "$owd"
+docker buildx use "${current_builder}"
+docker buildx rm tb_builder
+
+cd "$owd" || exit

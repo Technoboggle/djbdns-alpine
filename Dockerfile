@@ -1,4 +1,4 @@
-FROM alpine:3.17.1 AS builder
+FROM alpine:3.18.2 AS builder
 LABEL net.technoboggle.authorname="Edward Finlayson" \
       net.technoboggle.authors="edward.finlayson@btinternet.com" \
       net.technoboggle.version="0.1" \
@@ -38,8 +38,9 @@ RUN \
  make setup check; \
  apk del .build-deps;
 
-FROM alpine:3.17.1
+FROM alpine:3.18.2
 RUN \
+  apk update; \
   apk add --no-cache --virtual perl-net-dns; \
   mkdir -p /package/admin/daemontools-0.76/command/ ;\
   mkdir -p /command; \
@@ -54,7 +55,7 @@ RUN \
  adduser -D tinydns; \
  adduser -D dnslog; \
  tinydns-conf tinydns dnslog /etc/tinydns 0.0.0.0; \
- ln -s /etc/tinydns /service/tinydns; 
+ ln -s /etc/tinydns /service/tinydns;
 
 RUN \
  adduser -D axfrdns; \
