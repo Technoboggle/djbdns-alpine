@@ -3,38 +3,71 @@
 owd="$(pwd)"
 cd "$(dirname "$0")" || exit
 
-djbdns_ver="1.05"
-alpine_ver="3.18.2"
+BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+VCS_REF="$(git rev-parse --verify HEAD)"
+
+export BUILD_DATE
+export VCS_REF
+
+sed -i.bu -E 's/BUILD_DATE=".*"/BUILD_DATE="'"${BUILD_DATE}"'"/g' env.hcl
+sed -i.bu -E 's/VCS_REF=".*"/VCS_REF="'"${VCS_REF}"'"/g' env.hcl
+
+if [ -f env.hcl ]; then
+    while IFS= read -r line; do
+        export "$line"
+    done <env.hcl
+fi
+
+DOCKERCMD='docker run -it -d --rm -p 53:53 --name mydjbdns technoboggle/djbdns-alpine:'"${DJBDNS_VERSION//\"/}-${ALPINE_VERSION//\"/}"
+
+sed -i.bu -E 's#DOCKERCMD=".*"#DOCKERCMD="'"${DOCKERCMD//\"/}"'"#g' env.hcl
+
+export DOCKERCMD
+
+if [ -f .perms ]; then
+    export $(cat .perms | xargs)
+fi
 
 # Setting File permissions
 xattr -c .git
 xattr -c .gitignore
 xattr -c .dockerignore
 xattr -c ./*
-chmod 0666 ./*
+
 find "$(pwd)" -type d -exec chmod ugo+x {} \;
 find "$(pwd)" -type f -exec chmod ugo=wr {} \;
 find "$(pwd)" -type f \( -iname \*.sh -o -iname \*.py \) -exec chmod ugo+x {} \;
+chmod 0666 .gitignore
+chmod 0666 .dockerignore
 
-current_builder=$(docker buildx ls | grep -i '\*' | head -n1 | awk '{print $1;}')
-docker buildx create --name tb_builder --use --bootstrap
+chmod 0777 hooks/build
 
-docker login -u="technoboggle" -p="dckr_pat_FhwkY2NiSssfRBW2sJP6zfkXsjo"
+docker login -u="${DOCKER_USER}" -p="${DOCKER_PAT}"
 
-#docker network create djbdns
-docker buildx build -f Dockerfile --platform linux/amd64,linux/386 \
-    -t technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver" \
-    --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-    --build-arg VCS_REF="$(git rev-parse --verify HEAD)" \
-    --build-arg BUILD_VERSION=0.05 \
-    --no-cache \
-    --push .
-#--progress=plain
+current_builder=$(docker buildx ls | grep -i '\s\*' | head -n1 | awk '{print $1;}')
 
-docker run -it -d --rm -p 53:53 --name mydjbdns technoboggle/djbdns-alpine:"$djbdns_ver-$alpine_ver"
+#docker buildx create --name technoboggle_builder --use --bootstrap
+#docker buildx bake -f env.hcl -f docker-bake.hcl --builder technoboggle_builder --no-cache --push
+
+# The following would be for a remote builder
+docker buildx create --driver cloud technoboggle/production
+docker buildx bake -f docker-bake.hcl -f env.hcl --builder cloud-technoboggle-production --no-cache --push
+sed -i.bu -E 's/BUILD_DATE=".*"/BUILD_DATE=""/g' env.hcl
+sed -i.bu -E 's/VCS_REF=".*"/VCS_REF=""/g' env.hcl
+sed -i.bu -E 's/DOCKERCMD=".*"/DOCKERCMD=""/g' env.hcl
+
+rm -f env.hcl.bu
+
+
+echo "Running the container, using the following command:"
+echo "  ${DOCKERCMD}"
+echo
+docker run -it -d --rm -p 53:53 --name mydjbdns technoboggle/djbdns-alpine:"${DJBDNS_VERSION//\"/}-${ALPINE_VERSION//\"/}"
+
 docker container stop -t 10 mydjbdns
 
+echo "Switching back to builder: ${current_builder}"
 docker buildx use "${current_builder}"
-docker buildx rm tb_builder
+#docker buildx rm technoboggle_builder
 
 cd "$owd" || exit
