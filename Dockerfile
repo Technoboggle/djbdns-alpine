@@ -40,7 +40,7 @@ ARG DOCKERCMD
 
 WORKDIR /package
 RUN \
-      apk update --no-cache && \
+      apk update --no-cache && apk upgrade --no-cache \
       apk add --no-cache --virtual .build-deps gcc g++ make curl openssh-client rsync && \
       apk add --no-cache --virtual perl-net-dns && \
       mkdir /package; \
