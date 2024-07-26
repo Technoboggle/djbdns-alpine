@@ -40,7 +40,8 @@ ARG DOCKERCMD
 
 WORKDIR /package
 RUN \
-      apk update --no-cache && apk upgrade --no-cache \
+      apk update --no-cache && \
+      apk upgrade --no-cache && \
       apk add --no-cache --virtual .build-deps gcc g++ make curl openssh-client rsync && \
       apk add --no-cache --virtual perl-net-dns && \
       mkdir /package; \
@@ -71,7 +72,7 @@ RUN \
       apk del .build-deps && \
       rm -rf /var/cache/apk/*
 
-FROM alpine:${ALPINE_VERSION} as djbdns
+FROM alpine:${ALPINE_VERSION} AS djbdns
 
 ARG ALPINE_VERSION
 ARG DJBDNS_VERSION

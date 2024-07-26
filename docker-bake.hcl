@@ -29,7 +29,9 @@ target "app" {
         DOCKERCMD:"${DOCKERCMD}"
         USAGE:"${USAGE}"
     }
-    platforms = ["linux/arm64", "linux/amd64"]
+    # platforms = ["linux/386", "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64/v8", "linux/ppc64le", "linux/riscv64", "linux/s390x"]
+    # The following are the only platform builds which succeed on MAC OS
+    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm64"]
     push = true
     cache = false
     progress = "plain"
